@@ -48,9 +48,7 @@ Once you implement it, like so:
 # lib/my_enumerables.rb
 
 class Array
-  def my_each
-    # Complete code
-  end
+  
 end
 ```
 
