@@ -1,7 +1,9 @@
 module Enumerable
   def my_each_with_index
+    return to_enum(:my_each_with_index) unless block_given?
+
     index = 0
-    self.my_each do |elem|
+    my_each do |elem|
       yield elem, index
       index += 1
     end
@@ -9,8 +11,10 @@ module Enumerable
   end
 
   def my_select
+    return to_enum(:my_select) unless block_given?
+
     arr = []
-    self.my_each_with_index do |elem, index|
+    my_each_with_index do |elem, index|
       truthy_elem = (yield elem, index)
       arr.push elem if truthy_elem == true
     end
@@ -18,7 +22,7 @@ module Enumerable
   end
 
   def my_all?
-    self.my_each do |elem|
+    my_each do |elem|
       if block_given? && yield(elem) == false
         return false
       elsif elem == false
@@ -28,33 +32,53 @@ module Enumerable
     true
   end
 
-  def my_any?
+  def my_any?(pattern = nil)
+    # My own code. (A mess)
     truthy = 0
-    self.my_each do |elem|
+    my_each do |elem|
       if block_given? && yield(elem) == true
         truthy += 1
-      elsif elem == true
+      elsif pattern == elem
         truthy += 1
       end
     end
     truthy.positive? ? true : false
+
+    
+    # Code is a reference from crespire's code. For observation purpose.
+    
+    # def my_any?(pattern = nil)
+    #   expr = block_given? ? ->(elem) { yield elem } : ->(elem) { pattern === elem }
+    #   my_each { |elem| return true if expr.call(elem) }
+    #   false
+    # end
+  
+    # Another code that shows how to use Proc
+
+    # def my_any?(argv=nil, &block)
+    #   block = Proc.new { |item| item unless item.nil? || !item } unless block_given?
+    #   block = Proc.new { |item| item if argv === item} unless argv.nil?
+    #   self.my_each { |item| return true if block.call(item)}
+  
+    #   false
+    # end
   end
 
   def my_none?
     falsy = 0
-    self.my_each do |elem|
+    my_each do |elem|
       if block_given? && yield(elem) == false
         falsy += 1
       elsif elem == false
         falsy += 1
       end
     end
-    falsy == self.count ? true : false
+    falsy == count ? true : false
   end
 
   def my_count
     count = 0
-    self.my_each do |elem|
+    my_each do |elem|
       if block_given? && yield(elem) == true
         count += 1
       elsif block_given? == false
@@ -66,7 +90,7 @@ module Enumerable
 
   def my_map
     array = []
-    self.each do |elem|
+    each do |elem|
       return to_enum(:my_map) unless block_given?
 
       array << yield(elem)
@@ -76,7 +100,7 @@ module Enumerable
 
   def my_inject(int_val = 0)
     sum = int_val.to_i
-    self.each do |elem|
+    each do |elem|
       sum = yield(sum, elem)
     end
     sum
@@ -89,11 +113,16 @@ end
 # to this method
 class Array
   def my_each
+    return to_enum(:my_each) unless block_given?
     i = 0
-    while i < self.count
+    while i < count
       yield self[i]
       i += 1
     end
     self
+
+    # for el in self
+    #   yield el
+    # end
   end
 end
